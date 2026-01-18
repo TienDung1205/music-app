@@ -7,7 +7,7 @@ export const topics = async (req: Request, res: Response) => {
         deleted: false
     });
 
-    console.log(topics);
+    // console.log(topics);
 
     res.json(topics);
 };
