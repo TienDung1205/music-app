@@ -1,8 +1,8 @@
-import express, {Express, Request, Response} from 'express';
+import express, {Express} from 'express';
 import dotenv from 'dotenv';
 import * as database from "./config/database";
 
-import Topic from './api/v1/models/topic.model';
+import clientRoutes from './api/v1/routes/client/index.route';
 
 dotenv.config();
 
@@ -11,15 +11,7 @@ database.connect();
 const app: Express = express();
 const port: number | string = process.env.PORT || 3000;
 
-app.get('/topics', async (req: Request, res: Response) => {
-  const topics = await Topic.find({
-    deleted: false
-  })
-
-  console.log(topics);
-
-  res.json(topics);
-});
+clientRoutes(app);
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
