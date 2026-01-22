@@ -172,3 +172,47 @@ export const detail = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Lỗi server" });
     }
 };
+
+// [PATCH] /songs/like/:typeLike/:slugSong
+type LikeParams = {
+    typeLike: "like" | "unlike";
+    slugSong: string;
+};
+
+export const like = async (req: Request<LikeParams>, res: Response) => {
+    try{
+        const typeLike: string = req.params.typeLike;
+        const song = await Song.findOne({
+            slug: req.params.slugSong,
+            status: "active",
+            deleted: false
+        });
+
+        let newLike: number = song.like;
+
+        if(typeLike == "like"){
+            newLike = song.like + 1;
+        }
+        else if(typeLike == "unlike"){
+            newLike = song.like - 1;
+        }
+        else{
+            return res.status(400).json({ message: "Yêu cầu không hợp lệ" });
+        }
+
+        await Song.updateOne(
+            { slug: req.params.slugSong },
+            {
+                like: newLike
+            }
+        );
+        res.json({
+            code: 200,
+            message: "Cập nhật lượt thích thành công",
+            like: newLike
+        });
+    }catch(error){
+        console.error("ERROR:", error);
+        res.status(500).json({ message: "Lỗi server" });
+    }
+}
