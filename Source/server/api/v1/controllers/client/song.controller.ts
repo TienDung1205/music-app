@@ -5,6 +5,7 @@ import Song from "../../models/song.model";
 import Singer from "../../models/singer.model";
 import TopicSong from "../../models/topicsong.model";
 import SingerSong from "../../models/singersong.model";
+import FavoriteSong from "../../models/favoritesong.model";
 
 // [GET] /songs/:slugTopic
 export const list = async (req: Request, res: Response) => {
@@ -158,10 +159,16 @@ export const detail = async (req: Request, res: Response) => {
         .select("title avatar slug")
         .lean();
 
+        const favoriteSong = await FavoriteSong.findOne({
+            songId: String(song._id),
+            userId: "default-user" // Thay thế bằng userId khi đăng nhập
+        });
+
         const result = {
             ...song,
             singers,
-            topics
+            topics,
+            isFavorite: favoriteSong ? true : false
         };
 
         res.json(result);
@@ -208,7 +215,7 @@ export const like = async (req: Request<LikeParams>, res: Response) => {
         );
         res.json({
             code: 200,
-            message: "Cập nhật lượt thích thành công",
+            message: `Cập nhật ${typeLike} thành công`,
             like: newLike
         });
     }catch(error){
@@ -216,3 +223,57 @@ export const like = async (req: Request<LikeParams>, res: Response) => {
         res.status(500).json({ message: "Lỗi server" });
     }
 }
+
+// [PATCH] /songs/favorite/:typeFavorite/:slugSong
+type FavoriteParams = {
+    typeFavorite: "favorite" | "unfavorite";
+    slugSong: string;
+};
+
+export const favorite = async (req: Request<FavoriteParams>, res: Response) => {
+    try{
+        const typeFavorite: string = req.params.typeFavorite;
+        const slugSong: string = req.params.slugSong;
+
+        const song = await Song.findOne({
+            slug: slugSong,
+            status: "active",
+            deleted: false
+        });
+
+         const existFavoriteSong = await FavoriteSong.findOne({
+            songId: song.id,
+            userId: "default-user" // Thay thế bằng userId khi đăng nhập
+        });
+
+        if(typeFavorite == "favorite" && !existFavoriteSong){
+            // Thêm vào danh sách yêu thích
+
+            const record = new FavoriteSong({
+                songId: song.id,
+                userId: "default-user" // Thay thế bằng userId khi đăng nhập
+            });
+            await record.save();
+
+        }
+        else if(typeFavorite == "unfavorite" && existFavoriteSong){
+            // Xóa khỏi danh sách yêu thích
+
+            await FavoriteSong.deleteOne({
+                songId: song.id,
+                userId: "default-user" // Thay thế bằng userId khi đăng nhập
+            });
+
+        }else{
+            return res.status(400).json({ message: "Yêu cầu không hợp lệ" });
+        }
+
+        res.json({
+            code: 200,
+            message: `Đã xử lý yêu cầu ${typeFavorite} thành công`,
+         });
+    }catch(error){
+        console.error("ERROR:", error);
+        res.status(500).json({ message: "Lỗi server" });
+    }
+};
