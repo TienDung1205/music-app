@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Topic from "../../models/topic.model";
 
-// [GET] /topics/
+// [GET] api/v1/topics/
 export const topics = async (req: Request, res: Response) => {
     try{
         const topics = await Topic.find({

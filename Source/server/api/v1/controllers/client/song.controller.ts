@@ -7,7 +7,7 @@ import TopicSong from "../../models/topicsong.model";
 import SingerSong from "../../models/singersong.model";
 import FavoriteSong from "../../models/favoritesong.model";
 
-// [GET] /songs/:slugTopic
+// [GET] api/v1/songs/:slugTopic
 export const list = async (req: Request, res: Response) => {
     try {
     // console.log("=== STEP 1: FIND TOPIC ===");
@@ -108,7 +108,7 @@ export const list = async (req: Request, res: Response) => {
     }
 };
 
-// [GET] /songs/detail/:slugSong
+// [GET] api/v1/songs/detail/:slugSong
 export const detail = async (req: Request, res: Response) => {
     try{
         const song = await Song.findOne({
@@ -180,7 +180,7 @@ export const detail = async (req: Request, res: Response) => {
     }
 };
 
-// [PATCH] /songs/like/:typeLike/:slugSong
+// [PATCH] api/v1/songs/like/:typeLike/:slugSong
 type LikeParams = {
     typeLike: "like" | "unlike";
     slugSong: string;
@@ -224,7 +224,7 @@ export const like = async (req: Request<LikeParams>, res: Response) => {
     }
 }
 
-// [PATCH] /songs/favorite/:typeFavorite/:slugSong
+// [PATCH] api/v1/songs/favorite/:typeFavorite/:slugSong
 type FavoriteParams = {
     typeFavorite: "favorite" | "unfavorite";
     slugSong: string;
