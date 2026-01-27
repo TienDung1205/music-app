@@ -100,7 +100,14 @@ export const list = async (req: Request, res: Response) => {
         })
         .filter(Boolean);
 
-    res.json(results);
+    res.json(
+        {
+            code: 200,
+            message: "Lấy danh sách bài hát thành công",
+            topic: topic,
+            songs: results
+        }
+    );
 
     } catch (error) {
         console.error("ERROR:", error);
@@ -171,7 +178,13 @@ export const detail = async (req: Request, res: Response) => {
             isFavorite: favoriteSong ? true : false
         };
 
-        res.json(result);
+        res.json(
+            {
+                code: 200,
+                message: "Lấy chi tiết bài hát thành công",
+                song: result
+            }
+        );
 
 
     }catch(error){

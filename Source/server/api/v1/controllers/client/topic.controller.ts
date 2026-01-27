@@ -10,7 +10,11 @@ export const topics = async (req: Request, res: Response) => {
 
         // console.log(topics);
 
-        res.json(topics);
+        res.json({
+            code: 200,
+            message: "Lấy danh sách chủ đề thành công",
+            topics: topics
+        });
     }catch(error){
         console.error("ERROR:", error);
         res.status(500).json({ message: "Lỗi server" });
