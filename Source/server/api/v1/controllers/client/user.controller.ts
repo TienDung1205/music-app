@@ -99,19 +99,10 @@ export const login = async (req: Request, res: Response) => {
 // [GET] api/v1/users/infoUser
 export const infoUser = async (req: Request, res: Response) => {
     try{
-
-        if(!res.locals.user){
-            res.json({
-                code: 400,
-                message: "User không tồn tại"
-            })
-            return;
-        }
-
         res.json({
             code: 200,
             message: "Lấy thông tin user thành công",
-            user: res.locals.user
+            user: (req as any).user
         });
     }catch(error){
         res.json({
