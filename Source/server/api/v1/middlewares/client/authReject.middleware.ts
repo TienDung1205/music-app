@@ -14,7 +14,7 @@ export const rejectIfAuthenticated = async (req: Request,res: Response,next: Nex
     // Nếu verify được → đã login → chặn
     jwt.verify(token, process.env.JWT_SECRET as string);
 
-    return res.status(400).json({
+    res.json({
       code: 400,
       message: "Bạn đã đăng nhập rồi",
     });

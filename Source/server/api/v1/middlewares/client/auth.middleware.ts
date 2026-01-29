@@ -14,19 +14,21 @@ export const requireAuth = async (req: Request,res: Response,next: NextFunction)
     // console.log("authHeader:", authHeader);
 
     if (!authHeader) {
-      return res.status(401).json({
+      res.json({
         code: 401,
-        message: "Missing Authorization header",
-      });
+        message: "Chưa gửi token"
+      })
+      return;
     }
 
     // 2. Tách Bearer token
     const token = authHeader.split(" ")[1];
     if (!token) {
-      return res.status(401).json({
+      res.json({
         code: 401,
-        message: "Invalid Authorization format",
-      });
+        message: "Chưa gửi token"
+      })
+      return;
     }
 
     // console.log("token:", token);
@@ -45,21 +47,23 @@ export const requireAuth = async (req: Request,res: Response,next: NextFunction)
     }).select("fullName email phone address avatar");
 
     if (!user) {
-      return res.status(401).json({
-        code: 401,
-        message: "Invalid token",
-      });
+      res.json({
+        code: 400,
+        message: "User không tồn tại"
+      })
+      return;
     }
 
     // console.log("Authenticated user:", user);
 
     // 5. Gắn user vào request
-    res.locals.user = user;
+    (req as any).user = user;
     next();
+
   } catch (error) {
-    return res.status(401).json({
+    res.json({
       code: 401,
-      message: "Unauthorized",
+      message: "Token không hợp lệ"
     });
   }
 };
