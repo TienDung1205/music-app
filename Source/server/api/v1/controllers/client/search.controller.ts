@@ -6,9 +6,20 @@ import TopicSong from "../../models/topicsong.model";
 import SingerSong from "../../models/singersong.model";
 import { convertToSlug } from "../../../../helpers/convertToSlug";
 
-// [GET] api/v1/search/result
+// [GET] api/v1/search/:type
 export const result = async (req: Request, res: Response) => {
     try{
+        const type = req.params.type;
+
+        if(type != "result" && type != "suggest"){
+            res.json({
+                code: 400,
+                message: "Loại tìm kiếm không hợp lệ"
+            });
+
+            return;
+        }
+
         const keyword: string = `${req.query.keyword}`;
 
         let newSongs =[];
@@ -92,12 +103,21 @@ export const result = async (req: Request, res: Response) => {
 
         }
 
-        res.json({
-            code: 200,
-            message: "Tìm kiếm thành công",
-            songs: newSongs,
-            singers: newSingers
-        });
+        if(type == "result"){
+            res.json({
+                code: 200,
+                message: "Tìm kiếm thành công",
+                songs: newSongs,
+                singers: newSingers
+            });
+        }else{
+            res.json({
+                code: 200,
+                message: "Gợi ý tìm kiếm thành công",
+                songs: newSongs.slice(0, 5),
+                singers: newSingers.slice(0, 5)
+            });
+        }
     }catch(error){
         console.error("ERROR:", error);
         res.json({
