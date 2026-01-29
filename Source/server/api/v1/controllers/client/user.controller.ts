@@ -20,22 +20,24 @@ export const register = async (req: Request, res: Response) => {
         }else{
             const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
-            const tokenUser = generateHelper.generateRandomString(50);
-
             const newUser = new User({
                 email: req.body.email,
                 password: hashedPassword,
-                fullName: req.body.fullName,
-                tokenUser: tokenUser
+                fullName: req.body.fullName
             });
             await newUser.save();
 
-            res.cookie("tokenUser", tokenUser);
+            // Tạo JWT ngay sau khi đăng ký
+            const accessToken = jwt.sign(
+                { userId: newUser._id },
+                process.env.JWT_SECRET as string,
+                { expiresIn: "7d" }
+            );
 
             res.json({
                 code: 200,
                 message: "Đăng ký tài khoản thành công",
-                tokenUser: tokenUser
+                accessToken: accessToken
             });
         }
     }catch(error){
@@ -73,31 +75,44 @@ export const login = async (req: Request, res: Response) => {
             return;
         }
 
-        // Tạo JWT (mỗi lần login = token mới)
-        const tokenUser = jwt.sign(
-            {
-                userId: user.id
-            },
+        // Tạo JWT
+        const accessToken = jwt.sign(
+            { userId: user._id },
             process.env.JWT_SECRET as string,
-            {
-                expiresIn: "7d"
-            }
+            { expiresIn: "7d" }
         );
-
-        // 4. Set cookie (ghi đè cookie cũ)
-        res.cookie("tokenUser", tokenUser, {
-            httpOnly: true,
-            secure: false, // true nếu HTTPS
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 ngày
-        });
 
         res.json({
             code: 200,
             message: "Đăng nhập thành công",
-            tokenUser: user.tokenUser
+            accessToken: accessToken
         });
 
+    }catch(error){
+        res.json({
+            code: 400,
+            message: "Lỗi server"
+        })
+    }
+};
+
+// [GET] api/v1/users/infoUser
+export const infoUser = async (req: Request, res: Response) => {
+    try{
+
+        if(!res.locals.user){
+            res.json({
+                code: 400,
+                message: "User không tồn tại"
+            })
+            return;
+        }
+
+        res.json({
+            code: 200,
+            message: "Lấy thông tin user thành công",
+            user: res.locals.user
+        });
     }catch(error){
         res.json({
             code: 400,
