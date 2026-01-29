@@ -11,7 +11,7 @@ export const requireAuth = async (req: Request,res: Response,next: NextFunction)
     // 1. Lấy token từ header
     const authHeader = req.headers.authorization;
 
-    console.log("authHeader:", authHeader);
+    // console.log("authHeader:", authHeader);
 
     if (!authHeader) {
       return res.status(401).json({
@@ -29,7 +29,7 @@ export const requireAuth = async (req: Request,res: Response,next: NextFunction)
       });
     }
 
-    console.log("token:", token);
+    // console.log("token:", token);
 
     // 3. Verify JWT
     const decoded = jwt.verify(
@@ -42,7 +42,7 @@ export const requireAuth = async (req: Request,res: Response,next: NextFunction)
       _id: decoded.userId,
       status: "active",
       deleted: false,
-    }).select("email fullName");
+    }).select("fullName email phone address avatar");
 
     if (!user) {
       return res.status(401).json({
@@ -51,7 +51,7 @@ export const requireAuth = async (req: Request,res: Response,next: NextFunction)
       });
     }
 
-    console.log("Authenticated user:", user);
+    // console.log("Authenticated user:", user);
 
     // 5. Gắn user vào request
     res.locals.user = user;
