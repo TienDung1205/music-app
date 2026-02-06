@@ -290,3 +290,43 @@ export const favorite = async (req: Request<FavoriteParams>, res: Response) => {
         res.status(500).json({ message: "Lỗi server" });
     }
 };
+
+// [PATCH] api/v1/songs/listen/:slugSong
+export const listen = async (req: Request, res: Response) => {
+    try{
+        const slugSong = req.params.slugSong as string;
+
+        const song = await Song.findOne({
+            slug: slugSong,
+            status: "active",
+            deleted: false
+        });
+
+        const newListen: number = song.listen + 1;
+
+        await Song.updateOne(
+            {
+                slug: slugSong
+            },
+            {
+                listen: newListen
+            }
+        );
+
+        const result = await Song.findOne({
+            slug: slugSong,
+            status: "active",
+            deleted: false
+        });
+
+        res.json({
+            code: 200,
+            message: `Cập nhật lượt nghe thành công`,
+            listen: result.listen
+        });
+
+    }catch(error){
+        console.error("ERROR:", error);
+        res.status(500).json({ message: "Lỗi server" });
+    }
+};
