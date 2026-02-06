@@ -7,6 +7,9 @@ import TopicSong from "../../models/topicsong.model";
 import SingerSong from "../../models/singersong.model";
 import FavoriteSong from "../../models/favoritesong.model";
 
+import * as songHelper from "../../../../helpers/song";
+import * as topicHelper from "../../../../helpers/topic";
+
 // [GET] api/v1/songs/:slugTopic
 export const list = async (req: Request, res: Response) => {
     try {
@@ -22,90 +25,21 @@ export const list = async (req: Request, res: Response) => {
         return res.status(404).json({ message: "Topic không tồn tại" });
     }
 
-    // console.log("=== STEP 2: FIND TOPIC_SONGS ===");
+    const result = await topicHelper.getTopicWithSongs(topic);
 
-    const topicSongs = await TopicSong.find({
-        topicId: String(topic._id)
-    })
-    .sort({ order: 1 })
-    .lean();
+    const newSongs = [];
 
-    const songIds = topicSongs.map(ts => String(ts.songId));
-
-    // console.log("=== STEP 3: FIND SONGS ===");
-
-    const songs = await Song.find({
-        _id: { $in: songIds },
-        status: "active",
-        deleted: false
-    })
-    .select("avatar title slug like")
-    .lean();
-
-    const songMap = new Map(
-        songs.map(song => [String(song._id), song])
-    );
-
-    // console.log("=== STEP 4: FIND SINGER_SONGS ===");
-
-    const singerSongs = await SingerSong.find({
-        songId: { $in: songIds.map(String) }
-    })
-    .sort({ order: 1 })
-    .lean();
-
-    const singerIds = [
-        ...new Set(singerSongs.map(ss => String(ss.singerId)))
-    ];
-
-    // console.log("=== STEP 5: FIND SINGERS ===");
-
-    const singers = await Singer.find({
-        _id: { $in: singerIds },
-        status: "active",
-        deleted: false
-    })
-    .select("fullName avatar slug")
-    .lean();
-
-    const singerMap = new Map(
-        singers.map(s => [String(s._id), s])
-    );
-
-    // console.log("=== STEP 6: GROUP SINGERS BY SONG ===");
-
-    const singerBySong = new Map<string, any[]>();
-
-    for (const ss of singerSongs) {
-        const songId = String(ss.songId);
-        const singer = singerMap.get(String(ss.singerId));
-        if (!singer) continue;
-
-        const list = singerBySong.get(songId) || [];
-        list.push(singer);
-        singerBySong.set(songId, list);
+    for(const song of result.songs){
+        const newSong = await songHelper.getSongWithSingers(song);
+        newSongs.push(newSong);
     }
-
-    // console.log("=== STEP 7: FINAL RESULT ===");
-
-    const results = topicSongs
-        .map(ts => {
-            const song = songMap.get(String(ts.songId));
-            if (!song) return null;
-
-            return {
-                ...song,
-                singers: singerBySong.get(String(ts.songId)) || []
-            };
-        })
-        .filter(Boolean);
 
     res.json(
         {
             code: 200,
             message: "Lấy danh sách bài hát thành công",
             topic: topic,
-            songs: results
+            songs: newSongs
         }
     );
 
