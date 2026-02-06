@@ -6,7 +6,6 @@ export const getTopicWithSongs = async (topic: any) => {
     const topicSongs = await TopicSong.find({
         topicId: String(topic._id)
     })
-    .sort({ order: 1 })
     .lean();
 
     // 2. Lấy ra danh sách các songId (loại bỏ trùng lặp nếu có)
@@ -20,7 +19,6 @@ export const getTopicWithSongs = async (topic: any) => {
         status: "active",
         deleted: false
     })
-    .select("title avatar audio slug like listen") // Các trường bạn muốn hiển thị ở bài hát
     .lean();
 
     // 4. Trả về object topic kèm theo mảng bài hát
