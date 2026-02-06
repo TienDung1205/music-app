@@ -1,10 +1,6 @@
 import { Request, Response } from "express";
-import mongoose from "mongoose";
 import Topic from "../../models/topic.model";
 import Song from "../../models/song.model";
-import Singer from "../../models/singer.model";
-import TopicSong from "../../models/topicsong.model";
-import SingerSong from "../../models/singersong.model";
 import FavoriteSong from "../../models/favoritesong.model";
 
 import * as songHelper from "../../../../helpers/song";
@@ -62,43 +58,7 @@ export const detail = async (req: Request, res: Response) => {
             return res.status(404).json({ message: "Song not found" });
         }
 
-        // Tìm các Singer liên quan đến bài hát này
-        const singerSongs = await SingerSong.find({
-            songId: String(song._id)
-        })
-        .sort({ order: 1 })
-        .lean();
-
-        const singerIds = [
-            ...new Set(singerSongs.map(ss => String(ss.singerId)))
-        ];
-
-        const singers = await Singer.find({
-            _id: { $in: singerIds },
-            status: "active",
-            deleted: false
-        })
-        .select("fullName avatar slug")
-        .lean();
-
-        // Tìm các Topic liên quan đến bài hát này
-        const topicSongs = await TopicSong.find({
-            songId: String(song._id)
-        })
-        .lean();
-
-
-        const topicIds = [
-            ...new Set(topicSongs.map(ts => String(ts.topicId)))
-        ];
-
-        const topics = await Topic.find({
-            _id: { $in: topicIds },
-            status: "active",
-            deleted: false
-        })
-        .select("title avatar slug")
-        .lean();
+        const newSong = await songHelper.getSongWithSingersAndTopics(song);
 
         const favoriteSong = await FavoriteSong.findOne({
             songId: String(song._id),
@@ -106,9 +66,7 @@ export const detail = async (req: Request, res: Response) => {
         });
 
         const result = {
-            ...song,
-            singers,
-            topics,
+            ...newSong,
             isFavorite: favoriteSong ? true : false
         };
 
