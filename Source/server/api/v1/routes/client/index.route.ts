@@ -8,7 +8,7 @@ const clientRoutesApiVer1 = (app : Express): void => {
 
     const version = '/api/v1';
 
-    app.use(version +"/topics", topicRoutes);
+    app.use(version + "/topics", topicRoutes);
 
     app.use(version + "/songs", songRoutes);
 
