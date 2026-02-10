@@ -4,6 +4,7 @@ import Singer from "../../models/singer.model";
 import { convertToSlug } from "../../../../helpers/convertToSlug";
 
 import * as songHelper from "../../../../helpers/song";
+import * as escapeRegExpHelper from "../../../../helpers/escapeRegExp";
 
 // [GET] api/v1/search/:type
 export const result = async (req: Request, res: Response) => {
@@ -19,17 +20,18 @@ export const result = async (req: Request, res: Response) => {
             return;
         }
 
-        const keyword: string = `${req.query.keyword}`;
+        const keyword = typeof req.query.keyword === 'string' ? req.query.keyword : "";
+        const safeKeyword = escapeRegExpHelper.escapeRegExp(keyword);
 
         let newSongs =[];
         let newSingers =[];
 
-        if(keyword){
-            const keywordRegex = new RegExp(keyword, 'i');
+        if(safeKeyword){
+            const keywordRegex = new RegExp(safeKeyword, 'i');
 
             // Tạo slug từ keyword để tìm kiếm
             const keywordSlug = convertToSlug(keyword);
-            const keywordSlugRegex = new RegExp(keywordSlug, 'i');
+            const keywordSlugRegex = new RegExp(escapeRegExpHelper.escapeRegExp(keywordSlug), 'i');
 
             const songs = await Song.find({
                 $or: [
