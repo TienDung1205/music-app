@@ -2,6 +2,7 @@ import express, {Express} from 'express';
 import dotenv from 'dotenv';
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
 import * as database from "./config/database";
 
 import clientRoutesApiVer1 from './api/v1/routes/client/index.route';
@@ -20,6 +21,7 @@ app.use(express.json()); // đọc JSON
 app.use(express.urlencoded({ extended: true })); // đọc form
 
 app.use(cookieParser()); // đọc cookie
+app.use(helmet());
 
 // Client routes
 clientRoutesApiVer1(app);
