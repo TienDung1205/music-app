@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { v2 as cloudinary } from "cloudinary";
+import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import streamifier from "streamifier";
 import dotenv from "dotenv";
 dotenv.config();
